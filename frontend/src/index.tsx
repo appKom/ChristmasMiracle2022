@@ -1,12 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
 import { ChakraProvider } from "@chakra-ui/react";
+import { BrowserRouter } from "react-router-dom";
+import Router from "./router";
+import { RecoilRoot } from "recoil";
 
 ReactDOM.render(
   <React.StrictMode>
     <ChakraProvider>
-      <App />
+      <BrowserRouter>
+        <RecoilRoot>
+          <Router />
+        </RecoilRoot>
+      </BrowserRouter>
     </ChakraProvider>
   </React.StrictMode>,
   document.getElementById("root")
