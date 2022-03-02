@@ -4,16 +4,18 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { BrowserRouter } from "react-router-dom";
 import Router from "./router";
 import { RecoilRoot } from "recoil";
+import NavBar from "./components/NavBar";
 
 ReactDOM.render(
   <React.StrictMode>
-    <ChakraProvider>
-      <BrowserRouter>
-        <RecoilRoot>
+    <RecoilRoot>
+      <ChakraProvider>
+        <BrowserRouter>
+          <NavBar />
           <Router />
-        </RecoilRoot>
-      </BrowserRouter>
-    </ChakraProvider>
+        </BrowserRouter>
+      </ChakraProvider>
+    </RecoilRoot>
   </React.StrictMode>,
   document.getElementById("root")
 );
