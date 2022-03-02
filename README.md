@@ -11,4 +11,4 @@ Den hemmelige julekalenderen for Online julen 2022.
 - Chakra UI
 
 ### Backend
-
+- Django
