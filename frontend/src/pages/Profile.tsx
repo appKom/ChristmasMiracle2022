@@ -1,7 +1,6 @@
 import React, { FC } from "react";
-import { Container, Box, Heading } from "@chakra-ui/react";
+import { Container, Box, Heading, Text } from "@chakra-ui/react";
 import { useUser } from "../state/auth";
-import { Navigate } from "react-router-dom";
 
 const Profile: FC = () => {
   const user = useUser();
@@ -9,12 +8,20 @@ const Profile: FC = () => {
   if (!user) {
     return <Container>Loading...</Container>;
   }
-
+  console.log(user);
   return (
     <Container>
       <Box>
         <Heading as="h1">Profile</Heading>
-        <p>{user.profile.name}</p>
+        <Text>
+          Navn: {user.profile.name}
+          <br />
+          Kallenavn: {user.profile.nickname}
+          <br />
+          Poeng: {0}
+          <br />
+          Flagg: {0}
+        </Text>
       </Box>
     </Container>
   );

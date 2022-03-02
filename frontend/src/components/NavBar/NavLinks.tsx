@@ -25,7 +25,7 @@ const NavLinks: FC = () => {
   };
 
   return (
-    <Flex w="30%" bg="black" h="50px" marginLeft="auto" padding="2px">
+    <Flex w="30%" h="50px" marginLeft="auto" padding="2px">
       <NavLink to={NavPages.HOME}>Hjem</NavLink>
       <Spacer />
       <NavLink to={NavPages.LEADERBOARD}>Leaderboard</NavLink>
