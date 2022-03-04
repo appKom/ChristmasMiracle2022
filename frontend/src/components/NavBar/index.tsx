@@ -5,7 +5,7 @@ import NavLinks from "./NavLinks";
 
 const NavBar: FC = () => {
   return (
-    <Box w="100%" bg="red" h="50px">
+    <Box w="100%" bg="#830e10">
       <NavLinks />
     </Box>
   );

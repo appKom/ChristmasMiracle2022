@@ -6,6 +6,7 @@ import { useUser, logOutUser } from "../../state/auth";
 import userManager from "../../lib/oidc";
 
 enum NavPages {
+  REGISTER = "/register",
   LEADERBOARD = "/leaderboard",
   TASKS = "/tasks",
   PROFILE = "/profile",
@@ -25,10 +26,10 @@ const NavLinks: FC = () => {
   };
 
   return (
-    <Flex w="30%" h="50px" marginLeft="auto" padding="2px">
+    <Flex w="40%" marginLeft="auto" height="100%" p={3} align="center">
       <NavLink to={NavPages.HOME}>Hjem</NavLink>
       <Spacer />
-      <NavLink to={NavPages.LEADERBOARD}>Leaderboard</NavLink>
+      <NavLink to={NavPages.LEADERBOARD}>Ledertavle</NavLink>
       <Spacer />
       <NavLink to={NavPages.TASKS}>Oppgaver</NavLink>
       <Spacer />
@@ -39,7 +40,13 @@ const NavLinks: FC = () => {
           <NavButton func={onLogout}>Logg ut</NavButton>
         </>
       ) : (
-        <NavButton func={signInWithRedirect}>Logg inn</NavButton>
+        <>
+          <NavButton func={signInWithRedirect}>Logg inn</NavButton>
+          <Spacer />
+          <NavLink asButton to={NavPages.REGISTER}>
+            Registrer
+          </NavLink>
+        </>
       )}
     </Flex>
   );

@@ -40,13 +40,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255, blank=True, null=True)
     nickname = models.CharField(max_length=255, unique=True)
     picture = models.CharField(max_length=1000, blank=True, null=True)
-    preferred_username = models.CharField(max_length=255, blank=True, null=True)    
+    preferred_username = models.CharField(
+        max_length=255, blank=True, null=True)
     is_staff = models.BooleanField(default=False)
 
     points = models.IntegerField(default=0)
     flags = models.IntegerField(default=0)
-
-
 
     # Usermanager for creating users
     objects = UserProfileManager()
@@ -57,3 +56,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.nickname
 
+
+class Task(models.Model):
+    # Fields for the task model
+    title = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    points = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.task_name
