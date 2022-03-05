@@ -5,7 +5,7 @@ import Profile from "../pages/Profile";
 import RequireAuth from "./RequireAuth";
 import Tasks from "../pages/Tasks";
 import Leaderboard from "../pages/Leaderboard";
-
+import Register from "../pages/Register";
 const Router: FC = () => {
   return (
     <Routes>
@@ -19,6 +19,7 @@ const Router: FC = () => {
       />
       <Route path="/tasks" element={<Tasks />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="register" element={<Register />} />
       <Route path="/" element={<Home />} />
     </Routes>
   );
