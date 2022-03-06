@@ -30,6 +30,8 @@ class LoginView(ObtainAuthToken):
             return Response(
                 {
                     "token": token.key,
+                    "user": UserSerializer(user).data,
+
                 }
             )
         except:
@@ -44,11 +46,6 @@ class ValidateTokenView(RetrieveAPIView):
 
 
 class RegisterView(CreateAPIView):
-    """
-    Create a view that takes a POST request
-    with a username, email and password, and creates a user with that info
-    """
-
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
@@ -57,6 +54,6 @@ class RegisterView(CreateAPIView):
         response = super().post(request, *args, **kwargs)
 
         token, created = Token.objects.get_or_create(
-            user_id=response.data["id"])
+            user_id=response.data["pk"])
         response.data["token"] = str(token)
         return response

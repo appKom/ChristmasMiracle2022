@@ -16,12 +16,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from core.views import UserViewSet
+from core.views import TaskViewSet
+from authentication.views import LoginView, RegisterView, ValidateTokenView
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
+router.register(r'tasks', TaskViewSet)
+
+
+auth_urlpatterns = [
+    path('login/', LoginView.as_view(), name='login'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('validate-token/', ValidateTokenView.as_view(), name='validate-token'),
+]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('auth/', include(auth_urlpatterns)),
 ]

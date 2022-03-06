@@ -62,4 +62,4 @@ class Task(models.Model):
     points = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.task_name
+        return self.title
