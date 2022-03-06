@@ -1,9 +1,14 @@
 import { atom, useRecoilState } from "recoil";
-import { User } from "oidc-client";
+import { BackendUser } from "../types/api";
 
-export const authState = atom<User | null>({
-  key: "auth",
+export const userState = atom<BackendUser | null>({
+  key: "user",
   default: null,
 });
 
-export default authState;
+export const useUser = () => {
+  const [user, setUser] = useRecoilState(userState);
+  return { user, setUser };
+};
+
+export default userState;

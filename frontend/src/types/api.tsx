@@ -1,11 +1,17 @@
 export type BackendUser = {
-  owID: string;
-  family_name: string;
-  given_name: string;
-  name: string;
-  nickname: string;
-  picture: string;
-  preferred_username: string;
+  pk: number;
+  username: string;
+  email: string;
+  solvedTasks: TaskType[];
+};
+
+export type TaskType = {
+  title: string;
+  description: string;
   points: number;
-  flags: number;
+};
+
+export type LoginResponseType = {
+  token: string;
+  user: BackendUser;
 };

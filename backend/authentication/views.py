@@ -57,3 +57,9 @@ class RegisterView(CreateAPIView):
             user_id=response.data["pk"])
         response.data["token"] = str(token)
         return response
+
+
+class LogoutView(View):
+    def post(self, request, *args, **kwargs):
+        request.user.auth_token.delete()
+        return Response(status=200)
