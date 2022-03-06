@@ -6,12 +6,15 @@ from django.contrib.auth.models import BaseUserManager
 
 class UserProfileManager(BaseUserManager):
     # Create a new user profile
-    def create_user(self, nickname, password, owID):
+    def create_user(self, username, email, password):
 
-        if not owID:
-            raise ValueError("Must have an owID")
+        if not username:
+            raise ValueError("Must have an username")
 
-        user = self.model(nickname=nickname, owID=owID)
+        if not email:
+            raise ValueError("Must have an email")
+
+        user = self.model(username=username, email=email)
 
         user.set_password(password)
         user.save(using=self._db)
@@ -19,9 +22,9 @@ class UserProfileManager(BaseUserManager):
         return user
 
     # Create a new superuser profile
-    def create_superuser(self, nickname, password, owID):
+    def create_superuser(self, username, email, password):
 
-        user = self.create_user(nickname, password, owID)
+        user = self.create_user(username, email,  password)
         user.is_superuser = True
         user.is_staff = True
 
@@ -34,27 +37,22 @@ class UserProfileManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
 
     # Fields for the user model
-    owID = models.IntegerField(primary_key=True)
-    family_name = models.CharField(max_length=255, blank=True, null=True)
-    given_name = models.CharField(max_length=255, blank=True, null=True)
-    name = models.CharField(max_length=255, blank=True, null=True)
-    nickname = models.CharField(max_length=255, unique=True)
-    picture = models.CharField(max_length=1000, blank=True, null=True)
-    preferred_username = models.CharField(
-        max_length=255, blank=True, null=True)
+    username = models.CharField(max_length=255, unique=True)
+    email = models.CharField(max_length=255, blank=True, null=True)
+
     is_staff = models.BooleanField(default=False)
 
-    points = models.IntegerField(default=0)
-    flags = models.IntegerField(default=0)
+    solvedTasks = models.ManyToManyField(
+        'Task', related_name='solvedTasks', blank=True)
 
     # Usermanager for creating users
     objects = UserProfileManager()
 
-    USERNAME_FIELD = "nickname"
-    REQUIRED_FIELDS = ["owID"]
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
 
     def __str__(self):
-        return self.nickname
+        return self.username
 
 
 class Task(models.Model):
