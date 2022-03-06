@@ -2,7 +2,6 @@ import React, { FC } from "react";
 import NavLink from "./NavLink";
 import NavButton from "./NavButton";
 import { Spacer, Flex } from "@chakra-ui/react";
-import { useUser, logOutUser } from "../../state/auth";
 
 enum NavPages {
   REGISTER = "/register",
@@ -14,13 +13,6 @@ enum NavPages {
 }
 
 const NavLinks: FC = () => {
-  const user = useUser();
-
-  const onLogout = () => {
-    logOutUser();
-    window.location.reload();
-  };
-
   return (
     <Flex w="40%" marginLeft="auto" height="100%" p={3} align="center">
       <NavLink to={NavPages.HOME}>Hjem</NavLink>
@@ -29,11 +21,11 @@ const NavLinks: FC = () => {
       <Spacer />
       <NavLink to={NavPages.TASKS}>Oppgaver</NavLink>
       <Spacer />
-      {user ? (
+      {false ? (
         <>
           <NavLink to={NavPages.PROFILE}>Profil</NavLink>
           <Spacer />
-          <NavButton func={onLogout}>Logg ut</NavButton>
+          <NavButton func={() => console.log("logg ut")}>Logg ut</NavButton>
         </>
       ) : (
         <>
