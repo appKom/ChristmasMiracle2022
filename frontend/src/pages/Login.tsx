@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import PageContainer from "../components/PageContainer";
-import RegisterForm from "../components/Register";
+import LoginForm from "../components/Login";
 
 const Register: FC = () => {
   const onSubmit = (data: any) => {
@@ -8,8 +8,8 @@ const Register: FC = () => {
   };
 
   return (
-    <PageContainer title="Registrer">
-      <RegisterForm onSubmit={onSubmit} />
+    <PageContainer title="Logg inn">
+      <LoginForm onSubmit={onSubmit} />
     </PageContainer>
   );
 };

@@ -3,10 +3,10 @@ import NavLink from "./NavLink";
 import NavButton from "./NavButton";
 import { Spacer, Flex } from "@chakra-ui/react";
 import { useUser, logOutUser } from "../../state/auth";
-import userManager from "../../lib/oidc";
 
 enum NavPages {
   REGISTER = "/register",
+  LOGIN = "/login",
   LEADERBOARD = "/leaderboard",
   TASKS = "/tasks",
   PROFILE = "/profile",
@@ -15,10 +15,6 @@ enum NavPages {
 
 const NavLinks: FC = () => {
   const user = useUser();
-
-  const signInWithRedirect = () => {
-    userManager.signinRedirect();
-  };
 
   const onLogout = () => {
     logOutUser();
@@ -41,7 +37,9 @@ const NavLinks: FC = () => {
         </>
       ) : (
         <>
-          <NavButton func={signInWithRedirect}>Logg inn</NavButton>
+          <NavLink asButton to={NavPages.LOGIN}>
+            Logg inn
+          </NavLink>
           <Spacer />
           <NavLink asButton to={NavPages.REGISTER}>
             Registrer
