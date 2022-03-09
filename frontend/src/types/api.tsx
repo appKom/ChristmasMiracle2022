@@ -11,7 +11,7 @@ export type TaskType = {
   points: number;
 };
 
-export type LoginResponseType = {
-  token: string;
-  user: BackendUser;
+export type TokenStateType = {
+  access: string;
+  refresh: string;
 };

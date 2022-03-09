@@ -1,7 +1,10 @@
 import React, { FC } from "react";
 import { Container, Box, Heading, Text } from "@chakra-ui/react";
+import { useUser } from "../state/auth";
 
 const Profile: FC = () => {
+  const user = useUser();
+  console.log(user);
   return (
     <Container>
       <Box>

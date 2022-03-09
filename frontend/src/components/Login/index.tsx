@@ -11,19 +11,35 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { LoginFormType } from "../../types/forms";
-type RegisterFormProps = {
-  onSubmit: (data: any) => void;
-};
+import { loginUser } from "../../api/auth";
+import { tokenState } from "../../state/auth";
+import { useRecoilState } from "recoil";
 
-const LoginForm: FC<RegisterFormProps> = ({ onSubmit }: RegisterFormProps) => {
+const LoginForm: FC = () => {
   const [show, setShow] = useState(false);
   const handleShow = () => setShow(!show);
+  const [, setToken] = useRecoilState(tokenState);
 
   const {
     handleSubmit,
     register,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormType>();
+
+  const onSubmit = async (data: any): Promise<void> => {
+    const username = data.username;
+    const password = data.password;
+    const response = await loginUser({ username, password });
+    if (response) {
+      setToken(response);
+    } else {
+      setError("password", {
+        type: "manual",
+        message: "Brukernavn og passord samsvarer ikke",
+      });
+    }
+  };
 
   return (
     <Box w="75%" ml="auto" mr="auto">

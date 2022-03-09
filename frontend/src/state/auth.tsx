@@ -1,14 +1,36 @@
+import { useEffect } from "react";
 import { atom, useRecoilState } from "recoil";
-import { BackendUser } from "../types/api";
+import { BackendUser, TokenStateType } from "../types/api";
+import { getUser } from "../api";
+
+export const tokenState = atom<TokenStateType>({
+  key: "token",
+  default: {
+    access: "",
+    refresh: "",
+  },
+});
 
 export const userState = atom<BackendUser | null>({
   key: "user",
   default: null,
 });
 
-export const useUser = () => {
+export const useUser = (): BackendUser | null => {
   const [user, setUser] = useRecoilState(userState);
-  return { user, setUser };
-};
+  const [token] = useRecoilState(tokenState);
 
-export default userState;
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const user = await getUser(token.access);
+      if (user) {
+        setUser(user);
+      }
+    };
+
+    if (!user) {
+      fetchProfile();
+    }
+  }, [token, user, setUser]);
+  return user;
+};

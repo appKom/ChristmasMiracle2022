@@ -1,20 +1,21 @@
 import React, { FC } from "react";
 import PageContainer from "../components/PageContainer";
 import LoginForm from "../components/Login";
-import { loginUser } from "../api/auth";
+import { useRecoilState } from "recoil";
+import { tokenState } from "../state/auth";
+import { Navigate } from "react-router-dom";
 
-const Register: FC = () => {
-  const onSubmit = (data: any) => {
-    const username = data.username;
-    const password = data.password;
-    loginUser({ username, password }).then((resp) => console.log(resp));
-  };
+const Login: FC = () => {
+  const [token] = useRecoilState(tokenState);
+  if (token) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <PageContainer title="Logg inn">
-      <LoginForm onSubmit={onSubmit} />
+      <LoginForm />
     </PageContainer>
   );
 };
 
-export default Register;
+export default Login;
