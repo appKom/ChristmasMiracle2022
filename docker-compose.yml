@@ -1,9 +1,35 @@
-
 services:
   frontend:
-    container_name: frontend
+    container_name: "cm_frontend"
     build: ./frontend
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/usr/src/app/
+
+  backend:
+    container_name: "cm_backend"
+    build: ./backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/usr/src/app/
+    env_file:
+      - .env
+    links:
+      - psql
+  
+  psql:
+    container_name: "cm_postgres"
+    image: "postgres:latest"
+    restart: "always"
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+
