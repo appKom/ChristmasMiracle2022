@@ -10,13 +10,14 @@ services:
   backend:
     container_name: "cm_backend"
     build: ./backend
+    restart: "always"
     ports:
       - "8080:8080"
     volumes:
       - ./backend:/usr/src/app/
     env_file:
       - .env
-    links:
+    depends_on:
       - psql
   
   psql:

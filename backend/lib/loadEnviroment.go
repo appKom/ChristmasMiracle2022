@@ -23,12 +23,13 @@ func LoadSystemEnv() *Enviroment {
 		log.Fatal("Error loading .env file")
 	}
 
-	dialect := os.Getenv("POSTGRES_DIALECT")
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
-	host := os.Getenv("POSTGRES_HOST")
-	port := os.Getenv("POSTGRES_PORT")
+	
+	host := os.Getenv("DB_HOST")
+	dialect := os.Getenv("DB_DIALECT")
+	port := os.Getenv("DB_PORT")
 
 	return &Enviroment{
 		DIALECT:  dialect,
