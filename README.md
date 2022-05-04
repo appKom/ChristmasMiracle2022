@@ -1,5 +1,7 @@
 # Christmas Miracle 2022
 
+Repo for Onlines julekalender 2022. Applikasjonen er bygget med Create React App og go.
+
 ## Teknologier
 
 ### Frontend
@@ -10,7 +12,9 @@
 
 ### Backend
 
-- Django
+- Go
+- Mux
+- Postgres
 
 ## Dokumentasjon
 
