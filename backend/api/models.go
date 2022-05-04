@@ -7,11 +7,13 @@ type Task struct {
 
 	Title   string
 	Content string
+	Points int
 }
 
 type Flag struct {
 	gorm.Model
 
-	Key    string
-	TaskID int
+	Key    string 
+	TaskID uint 
 }
+
