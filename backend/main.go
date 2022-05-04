@@ -5,31 +5,18 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/appKom/ChristmasMiracle2022/api"
 	"github.com/appKom/ChristmasMiracle2022/lib"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-type Task struct {
-	gorm.Model
-
-	Title   string
-	Content string
-}
-
-type Flag struct {
-	gorm.Model
-
-	Key    string
-	TaskID int
-}
-
 var db *gorm.DB
 
 func getTasks(w http.ResponseWriter, r *http.Request) {
 
-	var tasks []Task
+	var tasks []api.Task
 
 	db.Find(&tasks)
 
@@ -38,7 +25,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 
 func getTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	var task Task
+	var task api.Task
 
 	db.First(&task, params["id"])
 
@@ -46,7 +33,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func createTask(w http.ResponseWriter, r *http.Request) {
-	var task Task
+	var task api.Task
 	json.NewDecoder(r.Body).Decode(&task)
 
 	created := db.Create(&task)
@@ -59,22 +46,33 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func deleteTask(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var task api.Task
+
+	db.First(&task, params["id"])
+	db.Delete(&task)
+
+	json.NewEncoder(w).Encode(task)
+}
+
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/tasks", getTasks).Methods("GET")
-	myRouter.HandleFunc("/tasks/{id}", getTask).Methods("GET")
-	myRouter.HandleFunc("/tasks", createTask).Methods("POST")
+	subRouter := myRouter.PathPrefix("/api/v1").Subrouter()
+	subRouter.HandleFunc("/tasks", getTasks).Methods("GET")
+	subRouter.HandleFunc("/tasks/{id}", getTask).Methods("GET")
+	subRouter.HandleFunc("/tasks", createTask).Methods("POST")
+	subRouter.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8080", myRouter))
 }
 
 func main() {
-
 	loadedEnv := lib.LoadSystemEnv()
 	db = lib.ConnectToDataBase(loadedEnv)
 
 	defer db.Close()
 
-	db.AutoMigrate(&Task{}, &Flag{})
+	db.AutoMigrate(&api.Task{}, &api.Flag{})
 	handleRequests()
 }
