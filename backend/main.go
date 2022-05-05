@@ -23,6 +23,11 @@ func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 
+		if r.Method == "OPTIONS" {
+			setHeaders(w, http.StatusOK)
+			return
+		}
+
 		if token == "" {
 			setHeaders(w, http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("No token provided")
@@ -268,6 +273,37 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
+func getUser(w http.ResponseWriter, r *http.Request) {
+	id := r.Header.Get("ID")
+	var user api.User
+
+	db.First(&user, id)
+
+	var userResponse api.CreatedUser
+
+	userResponse.ID = user.ID
+	userResponse.Username = user.Username
+	userResponse.Email = user.Email
+	userResponse.Points = user.Points
+	userResponse.Admin = user.Admin
+
+	setHeaders(w, http.StatusOK)
+	json.NewEncoder(w).Encode(userResponse)
+}
+
+func getScoreBoard(w http.ResponseWriter, r *http.Request) {
+	type ScoreBoard struct {
+		Username string `json:"Username"`
+		Points   int    `json:"Points"`
+	}
+
+	var users []ScoreBoard
+	db.Raw("SELECT username, points FROM users ORDER BY points desc").Scan(&users)
+
+	setHeaders(w, http.StatusOK)
+	json.NewEncoder(w).Encode(users)
+}
+
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w, http.StatusOK)
 	w.WriteHeader(http.StatusNotImplemented)
@@ -282,20 +318,23 @@ func handleRequests() {
 	subRouter.HandleFunc("/tasks", getTasks).Methods("GET", "OPTIONS")
 	subRouter.HandleFunc("/tasks/{id}", getTask).Methods("GET", "OPTIONS")
 
-	subRouter.HandleFunc("/tasks", checkAuthMiddleware(checkAdminMiddleware(createTask))).Methods("POST")
-	subRouter.HandleFunc("/tasks/{id}", checkAuthMiddleware(checkAdminMiddleware(deleteTask))).Methods("DELETE")
+	subRouter.HandleFunc("/tasks", checkAuthMiddleware(checkAdminMiddleware(createTask))).Methods("POST", "OPTIONS")
+	subRouter.HandleFunc("/tasks/{id}", checkAuthMiddleware(checkAdminMiddleware(deleteTask))).Methods("DELETE", "OPTIONS")
 
 	// For debugging purposes, should be removed in production
-	subRouter.HandleFunc("/flags", checkAuthMiddleware(checkAdminMiddleware(getFlags))).Methods("GET")
-	authRouter.HandleFunc("/users", checkAuthMiddleware(checkAdminMiddleware(getUsers))).Methods("GET")
+	subRouter.HandleFunc("/flags", checkAuthMiddleware(checkAdminMiddleware(getFlags))).Methods("GET", "OPTIONS")
+	authRouter.HandleFunc("/users", checkAuthMiddleware(checkAdminMiddleware(getUsers))).Methods("GET", "OPTIONS")
 
 	// For submitting
-	subRouter.HandleFunc("/submit/{id}", checkAuthMiddleware(submitFlag)).Methods("POST")
+	subRouter.HandleFunc("/submit/{id}", checkAuthMiddleware(submitFlag)).Methods("POST", "OPTIONS")
+
+	subRouter.HandleFunc("/scoreboard", checkAuthMiddleware(getScoreBoard)).Methods("GET", "OPTIONS")
+	subRouter.HandleFunc("/profile", checkAuthMiddleware(getUser)).Methods("GET", "OPTIONS")
 
 	// For authentication
-	authRouter.HandleFunc("/login", loginUser).Methods("POST")
-	authRouter.HandleFunc("/register", createUser).Methods("POST")
-	authRouter.HandleFunc("/logout", notImplemented).Methods("POST")
+	authRouter.HandleFunc("/login", loginUser).Methods("POST", "OPTIONS")
+	authRouter.HandleFunc("/register", createUser).Methods("POST", "OPTIONS")
+	authRouter.HandleFunc("/logout", notImplemented).Methods("POST", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(":8080", myRouter))
 }

@@ -1,12 +1,10 @@
-import { BackendUser, TaskType  } from "../types/api";
+import { User, ScoreBoardUser, TaskType, TokenStateType } from "../types/api";
 
 export const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
 export const API_URL = `${API_BASE}/api/v1`;
 export const AUTH_URL = `${API_URL}/auth`;
-export const REFRESH_URL = `${API_BASE}/api/token/refresh/`;
-export const VALIDATE_URL = `${API_BASE}/api/token/validate/`;
 
 export type AJAXArguments = {
   url: string;
@@ -60,21 +58,20 @@ export const authorizedPost = ({
     body,
     headers: {
       ...headers,
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
 
-export const getUser = async (
-  token: string | null
-): Promise<BackendUser | null> => {
+export const fetchProfile = async (
+  token: TokenStateType | null
+): Promise<User | null> => {
   if (!token) {
     return null;
   }
 
   const response = await authorizedGet({
-    url: `${API_URL}/profile/`,
-    token,
+    url: `${API_URL}/profile`,
+    token: token.Access,
   });
   if (response.status === 200) {
     const data = await response.json();
@@ -93,5 +90,23 @@ export const fetchTasks = async (): Promise<TaskType[]> => {
     return data;
   }
   return [];
-}
+};
 
+export const fetchScoreBoard = async (
+  token: TokenStateType | null
+): Promise<ScoreBoardUser[]> => {
+  if (!token) {
+    return [];
+  }
+
+  const response = await authorizedGet({
+    url: `${API_URL}/scoreboard`,
+    token: token.Access,
+  });
+
+  if (response.status === 200) {
+    const data = await response.json();
+    return data;
+  }
+  return [];
+};

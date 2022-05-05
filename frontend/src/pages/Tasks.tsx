@@ -8,13 +8,15 @@ const Tasks: FC = () => {
   const [tasks, setTasks] = React.useState<TaskType[]>([]);
 
   useEffect(() => {
-      fetchTasks().then((tasks) => setTasks(tasks));
+    fetchTasks().then((tasks) => setTasks(tasks));
   }, []);
-  console.log(tasks);
+
   return (
     <PageContainer title="Oppgaver">
       <Text>Her finner man oppgaver!</Text>
-    {tasks.map((task) => <div key={task.Title}> Title: {task.Title}</div>)}
+      {tasks.map((task) => (
+        <div key={task.Title}> Title: {task.Title}</div>
+      ))}
     </PageContainer>
   );
 };

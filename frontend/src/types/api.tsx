@@ -1,8 +1,9 @@
-export type BackendUser = {
-  pk: number;
-  username: string;
-  email: string;
-  solvedTasks: TaskType[];
+export type User = {
+  ID: number;
+  Username: string;
+  Email: string;
+  Points: number;
+  Admin: boolean;
 };
 
 export type TaskType = {
@@ -14,4 +15,9 @@ export type TaskType = {
 export type TokenStateType = {
   Access: string;
   Refresh: string;
+};
+
+export type ScoreBoardUser = {
+  Username: string;
+  Points: number;
 };
