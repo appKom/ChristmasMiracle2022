@@ -6,12 +6,12 @@ export type BackendUser = {
 };
 
 export type TaskType = {
-  title: string;
-  description: string;
-  points: number;
+  Title: string;
+  Content: string;
+  Points: number;
 };
 
 export type TokenStateType = {
-  access: string;
-  refresh: string;
+  Access: string;
+  Refresh: string;
 };

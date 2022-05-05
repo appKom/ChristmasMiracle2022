@@ -23,3 +23,8 @@ type CreatedUser struct {
 	Points   int
 	Admin    bool
 }
+
+type TokenResponse struct {
+	Access  string
+	Refresh string
+}

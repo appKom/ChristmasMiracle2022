@@ -24,7 +24,7 @@ func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		token := r.Header.Get("Authorization")
 
 		if token == "" {
-			w.WriteHeader(http.StatusUnauthorized)
+			setHeaders(w, http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("No token provided")
 			return
 		}
@@ -33,14 +33,14 @@ func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		if len(extractedToken) == 2 {
 			token = strings.TrimSpace(extractedToken[1])
 		} else {
-			w.WriteHeader(http.StatusUnauthorized)
+			setHeaders(w, http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("Incorrect token format")
 			return
 		}
 
 		UID, err := auth.CheckTokenValidity(token, jwtSecret)
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
+			setHeaders(w, http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("Invalid token")
 			return
 		}
@@ -59,7 +59,7 @@ func checkAdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		db.First(&user, UID)
 
 		if !user.Admin {
-			w.WriteHeader(http.StatusForbidden)
+			setHeaders(w, http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("You are not admin")
 			return
 		} else {
@@ -68,12 +68,20 @@ func checkAdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+// function that sets headers
+func setHeaders(w http.ResponseWriter, status int) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.WriteHeader(status)
+}
+
 // Get all tasks
 func getTasks(w http.ResponseWriter, r *http.Request) {
 	var tasks []api.Task
 
 	db.Find(&tasks)
 
+	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(tasks)
 }
 
@@ -84,6 +92,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 
 	db.First(&task, params["id"])
 
+	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(task)
 }
 
@@ -110,6 +119,7 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	err := created.Error
 	if err != nil {
 		tx.Rollback()
+		setHeaders(w, http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 	}
 
@@ -120,11 +130,13 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	err = created.Error
 	if err != nil {
 		tx.Rollback()
+		setHeaders(w, http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 	}
 
 	tx.Commit()
 
+	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(task)
 }
 
@@ -142,16 +154,19 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 	err := tx.Exec("DELETE FROM tasks WHERE id = ?", task.ID).Error
 	if err != nil {
 		tx.Rollback()
+		setHeaders(w, http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 	}
 
 	err = tx.Exec("DELETE FROM flags WHERE id = ?", flag.ID).Error
 	if err != nil {
 		tx.Rollback()
+		setHeaders(w, http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 	}
 	tx.Commit()
 
+	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(task)
 }
 
@@ -169,9 +184,10 @@ func submitFlag(w http.ResponseWriter, r *http.Request) {
 
 	if flag.Key == submittedFlag.Key {
 		// TODO: award points to user
+		setHeaders(w, http.StatusOK)
 		json.NewEncoder(w).Encode(flag)
 	} else {
-		w.WriteHeader(http.StatusBadRequest)
+		setHeaders(w, http.StatusBadRequest)
 	}
 }
 
@@ -181,6 +197,7 @@ func getFlags(w http.ResponseWriter, r *http.Request) {
 
 	db.Find(&flags)
 
+	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(flags)
 }
 
@@ -189,7 +206,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if user.Username == "" || user.Email == "" || user.Password == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		setHeaders(w, http.StatusBadRequest)
 		return
 	}
 
@@ -201,6 +218,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	created := db.Create(&user)
 	err := created.Error
 	if err != nil {
+		setHeaders(w, http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 	}
 
@@ -211,6 +229,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	createdUser.Points = user.Points
 	createdUser.Admin = user.Admin
 
+	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(createdUser)
 }
 
@@ -225,12 +244,18 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	if auth.CheckPasswordHash(loginCredentials.Password, user.Password) {
 		token, err := auth.CreateNewToken(user, jwtSecret)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			setHeaders(w, http.StatusInternalServerError)
 			return
 		}
-		json.NewEncoder(w).Encode(token)
+		setHeaders(w, http.StatusOK)
+
+		var completeToken api.TokenResponse
+		completeToken.Access = token
+		completeToken.Refresh = ""
+
+		json.NewEncoder(w).Encode(completeToken)
 	} else {
-		w.WriteHeader(http.StatusBadRequest)
+		setHeaders(w, http.StatusBadRequest)
 	}
 }
 
@@ -239,10 +264,12 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 
 	db.Find(&users)
 
+	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 }
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
+	setHeaders(w, http.StatusOK)
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -252,8 +279,8 @@ func handleRequests() {
 	authRouter := subRouter.PathPrefix("/auth").Subrouter()
 
 	// For tasks
-	subRouter.HandleFunc("/tasks", checkAuthMiddleware(getTasks)).Methods("GET")
-	subRouter.HandleFunc("/tasks/{id}", checkAuthMiddleware(getTask)).Methods("GET")
+	subRouter.HandleFunc("/tasks", getTasks).Methods("GET", "OPTIONS")
+	subRouter.HandleFunc("/tasks/{id}", getTask).Methods("GET", "OPTIONS")
 
 	subRouter.HandleFunc("/tasks", checkAuthMiddleware(checkAdminMiddleware(createTask))).Methods("POST")
 	subRouter.HandleFunc("/tasks/{id}", checkAuthMiddleware(checkAdminMiddleware(deleteTask))).Methods("DELETE")

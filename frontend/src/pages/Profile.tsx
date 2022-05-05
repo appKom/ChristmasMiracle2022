@@ -1,16 +1,16 @@
 import React, { FC } from "react";
 import { Container, Box, Heading, Text } from "@chakra-ui/react";
-import { useUser } from "../state/auth";
+import { useRecoilState } from "recoil";
+import { tokenState } from "../state/auth";
 
 const Profile: FC = () => {
-  const user = useUser();
-  console.log(user);
+  const [token] = useRecoilState(tokenState);
   return (
     <Container>
       <Box>
         <Heading as="h1">Profile</Heading>
         <Text>
-          Navn: {"name"}
+          Navn: {token ? token.Access : "Ingen token"}
           <br />
           Kallenavn: {"name"}
           <br />

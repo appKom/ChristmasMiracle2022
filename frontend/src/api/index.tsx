@@ -1,10 +1,10 @@
-import { BackendUser } from "../types/api";
+import { BackendUser, TaskType  } from "../types/api";
 
 export const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
-export const API_URL = `${API_BASE}/api`;
-export const AUTH_URL = `${API_BASE}/api/token/`;
+export const API_URL = `${API_BASE}/api/v1`;
+export const AUTH_URL = `${API_URL}/auth`;
 export const REFRESH_URL = `${API_BASE}/api/token/refresh/`;
 export const VALIDATE_URL = `${API_BASE}/api/token/validate/`;
 
@@ -34,7 +34,6 @@ export const authorizedGet = ({
     headers: {
       ...headers,
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
     },
   });
 };
@@ -83,3 +82,16 @@ export const getUser = async (
   }
   return null;
 };
+
+export const fetchTasks = async (): Promise<TaskType[]> => {
+  const response = await get({
+    url: `${API_URL}/tasks`,
+  });
+
+  if (response.status === 200) {
+    const data = await response.json();
+    return data;
+  }
+  return [];
+}
+

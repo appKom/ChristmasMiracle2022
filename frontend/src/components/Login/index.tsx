@@ -14,12 +14,13 @@ import { LoginFormType } from "../../types/forms";
 import { loginUser } from "../../api/auth";
 import { tokenState } from "../../state/auth";
 import { useRecoilState } from "recoil";
+import {  useNavigate } from "react-router-dom";
 
 const LoginForm: FC = () => {
   const [show, setShow] = useState(false);
   const handleShow = () => setShow(!show);
   const [, setToken] = useRecoilState(tokenState);
-
+  let navigate = useNavigate();
   const {
     handleSubmit,
     register,
@@ -28,15 +29,16 @@ const LoginForm: FC = () => {
   } = useForm<LoginFormType>();
 
   const onSubmit = async (data: any): Promise<void> => {
-    const username = data.username;
+    const email = data.email;
     const password = data.password;
-    const response = await loginUser({ username, password });
+    const response = await loginUser({ email, password });
     if (response) {
       setToken(response);
+      navigate("/");
     } else {
       setError("password", {
         type: "manual",
-        message: "Brukernavn og passord samsvarer ikke",
+        message: "Epost og passord samsvarer ikke",
       });
     }
   };
@@ -44,19 +46,19 @@ const LoginForm: FC = () => {
   return (
     <Box w="75%" ml="auto" mr="auto">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormControl isInvalid={!!errors.username}>
-          <FormLabel htmlFor="username" mt={2}>
-            Brukernavn
+        <FormControl isInvalid={!!errors.email}>
+          <FormLabel htmlFor="email" mt={2}>
+            Email
           </FormLabel>
           <Input
-            id="username"
-            placeholder="Brukernavn"
-            {...register("username", {
+            id="email"
+            placeholder="Email"
+            {...register("email", {
               required: "Påkrevd felt",
             })}
           />
           <FormErrorMessage>
-            {errors.username && errors.username.message}
+            {errors.email && errors.email.message}
           </FormErrorMessage>
         </FormControl>
 

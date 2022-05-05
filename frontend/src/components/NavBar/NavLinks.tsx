@@ -2,6 +2,8 @@ import React, { FC } from "react";
 import NavLink from "./NavLink";
 import NavButton from "./NavButton";
 import { Spacer, Flex } from "@chakra-ui/react";
+import { useRecoilState } from "recoil";
+import { tokenState } from "../../state/auth";
 
 enum NavPages {
   REGISTER = "/register",
@@ -13,6 +15,7 @@ enum NavPages {
 }
 
 const NavLinks: FC = () => {
+  const [token] = useRecoilState(tokenState);
   return (
     <Flex w="40%" marginLeft="auto" height="100%" p={3} align="center">
       <NavLink to={NavPages.HOME}>Hjem</NavLink>
@@ -20,8 +23,8 @@ const NavLinks: FC = () => {
       <NavLink to={NavPages.LEADERBOARD}>Ledertavle</NavLink>
       <Spacer />
       <NavLink to={NavPages.TASKS}>Oppgaver</NavLink>
-      <Spacer />
-      {false ? (
+      <Spacer /> 
+      {token? (
         <>
           <NavLink to={NavPages.PROFILE}>Profil</NavLink>
           <Spacer />

@@ -2,20 +2,17 @@ import { AUTH_URL, post, VALIDATE_URL } from "./index";
 import { TokenStateType } from "../types/api";
 
 export type LoginArguments = {
-  username: string;
+  email: string;
   password: string;
 };
 
 export const loginUser = async ({
-  username,
+  email,
   password,
 }: LoginArguments): Promise<TokenStateType | null> => {
   const response = await post({
-    url: AUTH_URL,
-    body: { username, password },
-    headers: {
-      "Content-Type": "application/json",
-    },
+    url: AUTH_URL + "/login",
+    body: { email, password },
   });
 
   if (response.status === 200) {
