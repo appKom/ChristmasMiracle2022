@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -12,11 +13,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var db *gorm.DB
+var jwtSecret string
 
+// Auth middleware
 func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
@@ -36,15 +38,33 @@ func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		email, err := auth.CheckTokenValidity(token)
+		UID, err := auth.CheckTokenValidity(token, jwtSecret)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("Invalid token")
 			return
 		}
 
-		r.Header.Set("Email", email)
+		r.Header.Set("ID", fmt.Sprint(UID))
 		next(w, r)
+	})
+}
+
+// Admin middleware
+func checkAdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		UID := r.Header.Get("ID")
+
+		var user api.User
+		db.First(&user, UID)
+
+		if !user.Admin {
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode("You are not admin")
+			return
+		} else {
+			next(w, r)
+		}
 	})
 }
 
@@ -173,9 +193,10 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashedPassword, _ := hashPassword(user.Password)
+	hashedPassword, _ := auth.HashPassword(user.Password)
 	user.Password = hashedPassword
 	user.Points = 0
+	user.Admin = false
 
 	created := db.Create(&user)
 	err := created.Error
@@ -188,6 +209,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	createdUser.Username = user.Username
 	createdUser.Email = user.Email
 	createdUser.Points = user.Points
+	createdUser.Admin = user.Admin
 
 	json.NewEncoder(w).Encode(createdUser)
 }
@@ -200,8 +222,8 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 
 	db.Where(&api.User{Email: loginCredentials.Email}).First(&user)
 
-	if checkPasswordHash(loginCredentials.Password, user.Password) {
-		token, err := auth.CreateNewToken(user)
+	if auth.CheckPasswordHash(loginCredentials.Password, user.Password) {
+		token, err := auth.CreateNewToken(user, jwtSecret)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -220,16 +242,6 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
@@ -240,17 +252,18 @@ func handleRequests() {
 	authRouter := subRouter.PathPrefix("/auth").Subrouter()
 
 	// For tasks
-	subRouter.HandleFunc("/tasks", getTasks).Methods("GET")
-	subRouter.HandleFunc("/tasks/{id}", getTask).Methods("GET")
-	subRouter.HandleFunc("/tasks", createTask).Methods("POST")
-	subRouter.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
+	subRouter.HandleFunc("/tasks", checkAuthMiddleware(getTasks)).Methods("GET")
+	subRouter.HandleFunc("/tasks/{id}", checkAuthMiddleware(getTask)).Methods("GET")
+
+	subRouter.HandleFunc("/tasks", checkAuthMiddleware(checkAdminMiddleware(createTask))).Methods("POST")
+	subRouter.HandleFunc("/tasks/{id}", checkAuthMiddleware(checkAdminMiddleware(deleteTask))).Methods("DELETE")
 
 	// For debugging purposes, should be removed in production
-	subRouter.HandleFunc("/flags", getFlags).Methods("GET")
-	authRouter.HandleFunc("/users", checkAuthMiddleware(getUsers)).Methods("GET")
+	subRouter.HandleFunc("/flags", checkAuthMiddleware(checkAdminMiddleware(getFlags))).Methods("GET")
+	authRouter.HandleFunc("/users", checkAuthMiddleware(checkAdminMiddleware(getUsers))).Methods("GET")
 
 	// For submitting
-	subRouter.HandleFunc("/submit/{id}", submitFlag).Methods("POST")
+	subRouter.HandleFunc("/submit/{id}", checkAuthMiddleware(submitFlag)).Methods("POST")
 
 	// For authentication
 	authRouter.HandleFunc("/login", loginUser).Methods("POST")
@@ -263,6 +276,7 @@ func handleRequests() {
 func main() {
 	loadedEnv := lib.LoadSystemEnv()
 	db = lib.ConnectToDataBase(loadedEnv)
+	jwtSecret = loadedEnv.JWT_SECRET
 
 	defer db.Close()
 

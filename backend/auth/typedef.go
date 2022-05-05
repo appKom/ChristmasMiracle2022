@@ -16,6 +16,7 @@ type JWTClaim struct {
 }
 
 type JWTClaimUser struct {
+	ID       uint
 	Email    string
 	Username string
 	Points   int

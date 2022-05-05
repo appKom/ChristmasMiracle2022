@@ -8,12 +8,13 @@ import (
 )
 
 type Enviroment struct {
-	DIALECT  string
-	USER     string
-	PASSWORD string
-	DBNAME   string
-	HOST     string
-	PORT     string
+	DIALECT    string
+	USER       string
+	PASSWORD   string
+	DBNAME     string
+	HOST       string
+	PORT       string
+	JWT_SECRET string
 }
 
 func LoadSystemEnv() *Enviroment {
@@ -26,17 +27,18 @@ func LoadSystemEnv() *Enviroment {
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
-	
+
 	host := os.Getenv("DB_HOST")
 	dialect := os.Getenv("DB_DIALECT")
 	port := os.Getenv("DB_PORT")
-
+	jwtSecret := os.Getenv("JWT_SECRET")
 	return &Enviroment{
-		DIALECT:  dialect,
-		USER:     user,
-		PASSWORD: password,
-		DBNAME:   dbName,
-		HOST:     host,
-		PORT:     port,
+		DIALECT:    dialect,
+		USER:       user,
+		PASSWORD:   password,
+		DBNAME:     dbName,
+		HOST:       host,
+		PORT:       port,
+		JWT_SECRET: jwtSecret,
 	}
 }

@@ -21,4 +21,5 @@ type CreatedUser struct {
 	Email    string
 	Username string
 	Points   int
+	Admin    bool
 }
