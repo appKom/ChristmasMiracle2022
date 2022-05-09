@@ -305,8 +305,7 @@ func getScoreBoard(w http.ResponseWriter, r *http.Request) {
 }
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w, http.StatusOK)
-	w.WriteHeader(http.StatusNotImplemented)
+	setHeaders(w, http.StatusNotImplemented)
 }
 
 func handleRequests() {

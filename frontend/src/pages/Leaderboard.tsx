@@ -5,6 +5,7 @@ import { fetchScoreBoard } from "../api";
 import { useRecoilState } from "recoil";
 import { tokenState } from "../state/auth";
 import { ScoreBoardUser } from "../types/api";
+import LeaderBoard from "../components/LeaderBoard";
 
 const Leaderboard: FC = () => {
   const [token] = useRecoilState(tokenState);
@@ -17,11 +18,7 @@ const Leaderboard: FC = () => {
   return (
     <PageContainer title="Ledertavle">
       <Text>Her finner man de deltagerne med høyest poengsum!</Text>
-      {scoreBoard.map((user) => (
-        <div key={user.Username}>
-          username: {user.Username}, points: {user.Points}
-        </div>
-      ))}
+      <LeaderBoard users={scoreBoard} />
     </PageContainer>
   );
 };

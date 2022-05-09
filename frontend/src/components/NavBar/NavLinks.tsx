@@ -20,12 +20,12 @@ const NavLinks: FC = () => {
     <Flex w="40%" marginLeft="auto" height="100%" p={3} align="center">
       <NavLink to={NavPages.HOME}>Hjem</NavLink>
       <Spacer />
-      <NavLink to={NavPages.LEADERBOARD}>Ledertavle</NavLink>
-      <Spacer />
       <NavLink to={NavPages.TASKS}>Oppgaver</NavLink>
-      <Spacer /> 
-      {token? (
+      <Spacer />
+      {token ? (
         <>
+          <NavLink to={NavPages.LEADERBOARD}>Ledertavle</NavLink>
+          <Spacer />
           <NavLink to={NavPages.PROFILE}>Profil</NavLink>
           <Spacer />
           <NavButton func={() => console.log("logg ut")}>Logg ut</NavButton>
@@ -35,7 +35,6 @@ const NavLinks: FC = () => {
           <NavLink asButton to={NavPages.LOGIN}>
             Logg inn
           </NavLink>
-          <Spacer />
           <NavLink asButton to={NavPages.REGISTER}>
             Registrer
           </NavLink>
