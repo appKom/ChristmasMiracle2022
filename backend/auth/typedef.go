@@ -11,13 +11,15 @@ type JWTWrapper struct {
 }
 
 type JWTClaim struct {
-	User JWTClaimUser
+	Sub    uint   `json:"sub"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Points int    `json:"points"`
+	Admin  bool   `json:"admin"`
 	jwt.StandardClaims
 }
 
-type JWTClaimUser struct {
-	ID       uint
-	Email    string
-	Username string
-	Points   int
+type JWTRefreshClaim struct {
+	Sub uint `json:"sub"`
+	jwt.StandardClaims
 }

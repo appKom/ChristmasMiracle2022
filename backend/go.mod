@@ -13,4 +13,5 @@ require (
 require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/lib/pq v1.1.1 // indirect
+	golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 )

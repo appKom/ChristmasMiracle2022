@@ -1,30 +1,35 @@
 package api
 
 type SubmittedFlag struct {
-	Key string
+	Key string `json:"key"`
 }
 
 type NewTask struct {
-	Title   string
-	Content string
-	Points  int
-	Key     string
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Points  int    `json:"points"`
+	Key     string `json:"key"`
 }
 
 type LoginCredentials struct {
-	Email    string
-	Password string
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type CreatedUser struct {
-	ID       uint
-	Email    string
-	Username string
-	Points   int
-	Admin    bool
+	ID          uint   `json:"id"`
+	Email       string `json:"email"`
+	Username    string `json:"username"`
+	Points      int    `json:"points"`
+	Admin       bool   `json:"admin"`
+	SolvedTasks []uint `json:"solved_tasks"`
 }
 
 type TokenResponse struct {
-	Access  string
-	Refresh string
+	Access  string `json:"access"`
+	Refresh string `json:"refresh"`
+}
+
+type RefreshToken struct {
+	Refresh string `json:"refresh_token"`
 }

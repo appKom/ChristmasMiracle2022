@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"golang.org/x/exp/slices"
 )
 
 var db *gorm.DB
@@ -43,14 +44,14 @@ func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		UID, err := auth.CheckTokenValidity(token, jwtSecret)
+		UID, err := auth.CheckTokenValidityWithClaims(token, jwtSecret)
 		if err != nil {
 			setHeaders(w, http.StatusUnauthorized)
-			json.NewEncoder(w).Encode("Invalid token")
+			json.NewEncoder(w).Encode("Correct flag!")
 			return
 		}
 
-		r.Header.Set("ID", fmt.Sprint(UID))
+		r.Header.Set("sub", fmt.Sprint(UID))
 		next(w, r)
 	})
 }
@@ -58,7 +59,7 @@ func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 // Admin middleware
 func checkAdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		UID := r.Header.Get("ID")
+		UID := r.Header.Get("sub")
 
 		var user api.User
 		db.First(&user, UID)
@@ -180,20 +181,61 @@ func submitFlag(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var submittedFlag api.SubmittedFlag
 	var flag api.Flag
+	var user api.User
 	var task api.Task
 
-	db.First(&task, params["id"])
+	db.First(&user, r.Header.Get("sub"))
 	json.NewDecoder(r.Body).Decode(&submittedFlag)
 
-	db.Where(&api.Flag{Key: submittedFlag.Key}).First(&flag)
+	db.First(&task, params["id"])
 
-	if flag.Key == submittedFlag.Key {
-		// TODO: award points to user
-		setHeaders(w, http.StatusOK)
-		json.NewEncoder(w).Encode(flag)
-	} else {
+	if task.ID == 0 {
 		setHeaders(w, http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Invalid task ID")
+		return
 	}
+
+	db.Where(&api.Flag{Key: submittedFlag.Key, TaskID: task.ID}).First(&flag)
+
+	if flag.ID == 0 {
+		setHeaders(w, http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Invalid flag")
+		return
+	}
+	// TODO: award points to user
+
+	var solvedTasks []api.Task
+	db.Model(&user).Related(&solvedTasks, "SolvedTasks")
+
+	if slices.Contains(solvedTasks, task) {
+		setHeaders(w, http.StatusBadRequest)
+		json.NewEncoder(w).Encode("You already solved this task")
+		return
+	}
+
+	tx := db.Begin()
+
+	err := tx.Model(&user).Association("SolvedTasks").Append(&task).Error
+	if err != nil {
+		tx.Rollback()
+		setHeaders(w, http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	err = tx.Model(&user).Update("Points", user.Points+task.Points).Error
+
+	if err != nil {
+		tx.Rollback()
+		setHeaders(w, http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	tx.Commit()
+
+	setHeaders(w, http.StatusOK)
+	json.NewEncoder(w).Encode(flag)
 }
 
 // Get all flags - debug
@@ -247,37 +289,61 @@ func loginUser(w http.ResponseWriter, r *http.Request) {
 	db.Where(&api.User{Email: loginCredentials.Email}).First(&user)
 
 	if auth.CheckPasswordHash(loginCredentials.Password, user.Password) {
-		token, err := auth.CreateNewToken(user, jwtSecret)
+		token, err := auth.CreateNewTokenPair(user, jwtSecret)
 		if err != nil {
 			setHeaders(w, http.StatusInternalServerError)
 			return
 		}
 		setHeaders(w, http.StatusOK)
 
-		var completeToken api.TokenResponse
-		completeToken.Access = token
-		completeToken.Refresh = ""
-
-		json.NewEncoder(w).Encode(completeToken)
+		json.NewEncoder(w).Encode(token)
 	} else {
 		setHeaders(w, http.StatusBadRequest)
 	}
+}
+
+func refreshToken(w http.ResponseWriter, r *http.Request) {
+	var refreshToken api.RefreshToken
+	json.NewDecoder(r.Body).Decode(&refreshToken)
+
+	sub, err := auth.CheckTokenValidity(refreshToken.Refresh, jwtSecret)
+
+	if err != nil {
+		setHeaders(w, http.StatusBadRequest)
+		return
+	}
+
+	var user api.User
+	var token api.TokenResponse
+
+	db.First(&user, sub)
+
+	token, err = auth.CreateNewTokenPair(user, jwtSecret)
+	if err != nil {
+		setHeaders(w, http.StatusInternalServerError)
+		return
+	}
+
+	setHeaders(w, http.StatusOK)
+	json.NewEncoder(w).Encode(token)
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
 	var users []api.User
 
 	db.Find(&users)
-
 	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	id := r.Header.Get("ID")
+	id := r.Header.Get("sub")
 	var user api.User
+	var solvedTasks []api.Task
 
 	db.First(&user, id)
+
+	db.Model(&user).Related(&solvedTasks, "SolvedTasks")
 
 	var userResponse api.CreatedUser
 
@@ -286,6 +352,10 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	userResponse.Email = user.Email
 	userResponse.Points = user.Points
 	userResponse.Admin = user.Admin
+
+	for _, task := range solvedTasks {
+		userResponse.SolvedTasks = append(userResponse.SolvedTasks, task.ID)
+	}
 
 	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(userResponse)
@@ -323,7 +393,6 @@ func handleRequests() {
 	// For debugging purposes, should be removed in production
 	subRouter.HandleFunc("/flags", checkAuthMiddleware(checkAdminMiddleware(getFlags))).Methods("GET", "OPTIONS")
 	authRouter.HandleFunc("/users", checkAuthMiddleware(checkAdminMiddleware(getUsers))).Methods("GET", "OPTIONS")
-
 	// For submitting
 	subRouter.HandleFunc("/submit/{id}", checkAuthMiddleware(submitFlag)).Methods("POST", "OPTIONS")
 
@@ -333,6 +402,7 @@ func handleRequests() {
 	// For authentication
 	authRouter.HandleFunc("/login", loginUser).Methods("POST", "OPTIONS")
 	authRouter.HandleFunc("/register", createUser).Methods("POST", "OPTIONS")
+	authRouter.HandleFunc("/refresh", refreshToken).Methods("POST", "OPTIONS")
 	authRouter.HandleFunc("/logout", notImplemented).Methods("POST", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(":8080", myRouter))
