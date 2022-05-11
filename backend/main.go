@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/appKom/ChristmasMiracle2022/api"
 	"github.com/appKom/ChristmasMiracle2022/auth"
@@ -47,7 +48,7 @@ func checkAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		UID, err := auth.CheckTokenValidityWithClaims(token, jwtSecret)
 		if err != nil {
 			setHeaders(w, http.StatusUnauthorized)
-			json.NewEncoder(w).Encode("Correct flag!")
+			json.NewEncoder(w).Encode("Invalid token")
 			return
 		}
 
@@ -85,7 +86,7 @@ func setHeaders(w http.ResponseWriter, status int) {
 func getTasks(w http.ResponseWriter, r *http.Request) {
 	var tasks []api.Task
 
-	db.Find(&tasks)
+	db.Where("release_date < ?", time.Now()).Find(&tasks)
 
 	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(tasks)
@@ -96,7 +97,13 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var task api.Task
 
-	db.First(&task, params["id"])
+	db.Where("release_date < ?", time.Now()).First(&task, params["id"])
+
+	if task.ID == 0 {
+		setHeaders(w, http.StatusNotFound)
+		json.NewEncoder(w).Encode("Task not found")
+		return
+	}
 
 	setHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(task)
@@ -107,18 +114,23 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 	var newTask api.NewTask
 	json.NewDecoder(r.Body).Decode(&newTask)
 
-	if newTask.Title == "" || newTask.Content == "" || newTask.Points == 0 || newTask.Key == "" {
+	if newTask.Title == "" || newTask.Content == "" || newTask.Points == 0 || newTask.Key == "" || newTask.ReleaseDate == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	var task api.Task
-	var flag api.Flag
+	date, date_err := time.Parse(time.RFC3339, newTask.ReleaseDate)
+	if date_err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	task.Title = newTask.Title
-	task.Content = newTask.Content
-	task.Points = newTask.Points
-
+	task := api.Task{
+		Title:       newTask.Title,
+		Content:     newTask.Content,
+		Points:      newTask.Points,
+		ReleaseDate: date,
+	}
 	tx := db.Begin()
 
 	created := tx.Create(&task)
@@ -127,10 +139,13 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 		tx.Rollback()
 		setHeaders(w, http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
+		return
 	}
 
-	flag.Key = newTask.Key // Should be hashed
-	flag.TaskID = task.ID
+	flag := api.Flag{
+		Key:    newTask.Key,
+		TaskID: task.ID,
+	}
 
 	created = tx.Create(&flag)
 	err = created.Error
@@ -138,6 +153,7 @@ func createTask(w http.ResponseWriter, r *http.Request) {
 		tx.Rollback()
 		setHeaders(w, http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
+		return
 	}
 
 	tx.Commit()
@@ -415,6 +431,9 @@ func main() {
 
 	defer db.Close()
 
-	db.AutoMigrate(&api.Task{}, &api.Flag{}, &api.User{})
+	db.AutoMigrate(&api.Task{})
+	db.AutoMigrate(&api.Flag{})
+	db.AutoMigrate(&api.User{})
+
 	handleRequests()
 }

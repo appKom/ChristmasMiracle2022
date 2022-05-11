@@ -1,15 +1,18 @@
 package api
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 )
 
 type Task struct {
 	gorm.Model
 
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	Points  int    `json:"points"`
+	Title       string    `json:"title"`
+	Content     string    `json:"content"`
+	Points      int       `json:"points"`
+	ReleaseDate time.Time `json:"release_date"`
 }
 
 type Flag struct {

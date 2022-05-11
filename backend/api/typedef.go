@@ -5,10 +5,11 @@ type SubmittedFlag struct {
 }
 
 type NewTask struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	Points  int    `json:"points"`
-	Key     string `json:"key"`
+	Title       string `json:"title"`
+	Content     string `json:"content"`
+	Points      int    `json:"points"`
+	Key         string `json:"key"`
+	ReleaseDate string `json:"release_date"`
 }
 
 type LoginCredentials struct {
