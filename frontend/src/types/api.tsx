@@ -7,6 +7,7 @@ export type User = {
 };
 
 export type TaskType = {
+  ID: number;
   title: string;
   content: string;
   points: number;

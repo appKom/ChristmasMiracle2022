@@ -3,6 +3,7 @@ import { Text } from "@chakra-ui/react";
 import PageContainer from "../components/PageContainer";
 import { fetchTasks } from "../api";
 import { TaskType } from "../types/api";
+import TaskList from "../components/Task";
 
 const Tasks: FC = () => {
   const [tasks, setTasks] = React.useState<TaskType[]>([]);
@@ -14,9 +15,7 @@ const Tasks: FC = () => {
   return (
     <PageContainer title="Oppgaver">
       <Text>Her finner man oppgaver!</Text>
-      {tasks.map((task) => (
-        <div key={task.title}> Title: {task.title}</div>
-      ))}
+      <TaskList tasks={tasks} />
     </PageContainer>
   );
 };

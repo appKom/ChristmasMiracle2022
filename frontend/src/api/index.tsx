@@ -92,6 +92,18 @@ export const fetchTasks = async (): Promise<TaskType[]> => {
   return [];
 };
 
+export const fetchTask = async (id: number): Promise<TaskType | null> => {
+  const response = await get({
+    url: `${API_URL}/tasks/${id}`,
+  });
+
+  if (response.status === 200) {
+    const data = await response.json();
+    return data;
+  }
+  return null;
+};
+
 export const fetchScoreBoard = async (
   token: TokenStateType | null
 ): Promise<ScoreBoardUser[]> => {
