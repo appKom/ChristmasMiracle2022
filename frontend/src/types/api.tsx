@@ -1,23 +1,24 @@
 export type User = {
   ID: number;
-  Username: string;
-  Email: string;
-  Points: number;
-  Admin: boolean;
+  username: string;
+  email: string;
+  points: number;
+  admin: boolean;
 };
 
 export type TaskType = {
-  Title: string;
-  Content: string;
-  Points: number;
+  title: string;
+  content: string;
+  points: number;
+  release_date: string;
 };
 
 export type TokenStateType = {
-  Access: string;
-  Refresh: string;
+  access: string;
+  refresh: string;
 };
 
 export type ScoreBoardUser = {
-  Username: string;
-  Points: number;
+  username: string;
+  points: number;
 };

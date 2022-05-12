@@ -15,7 +15,7 @@ const Tasks: FC = () => {
     <PageContainer title="Oppgaver">
       <Text>Her finner man oppgaver!</Text>
       {tasks.map((task) => (
-        <div key={task.Title}> Title: {task.Title}</div>
+        <div key={task.title}> Title: {task.title}</div>
       ))}
     </PageContainer>
   );

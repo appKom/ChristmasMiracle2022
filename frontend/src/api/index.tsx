@@ -71,7 +71,7 @@ export const fetchProfile = async (
 
   const response = await authorizedGet({
     url: `${API_URL}/profile`,
-    token: token.Access,
+    token: token.access,
   });
   if (response.status === 200) {
     const data = await response.json();
@@ -101,7 +101,7 @@ export const fetchScoreBoard = async (
 
   const response = await authorizedGet({
     url: `${API_URL}/scoreboard`,
-    token: token.Access,
+    token: token.access,
   });
 
   if (response.status === 200) {

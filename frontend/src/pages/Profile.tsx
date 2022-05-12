@@ -1,8 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import {
-  Container,
   Box,
-  Heading,
   TableContainer,
   Table,
   Thead,
@@ -38,15 +36,15 @@ const Profile: FC = () => {
                 <Td>Brukernavn</Td>
                 <Td>Email</Td>
                 <Td>Poeng</Td>
-                {user.Admin ? <Td>Admin</Td> : null}
+                {user.admin ? <Td>Admin</Td> : null}
               </Tr>
             </Thead>
             <Tbody>
               <Tr>
-                <Td>{user.Username}</Td>
-                <Td>{user.Email}</Td>
-                <Td>{user.Points}</Td>
-                {user.Admin ? <Td>Ja</Td> : null}
+                <Td>{user.username}</Td>
+                <Td>{user.email}</Td>
+                <Td>{user.points}</Td>
+                {user.admin ? <Td>Ja</Td> : null}
               </Tr>
             </Tbody>
           </Table>

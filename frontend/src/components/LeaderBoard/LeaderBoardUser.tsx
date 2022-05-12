@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { ScoreBoardUser } from "../../types/api";
-import { Box, Tr, Td } from "@chakra-ui/react";
+import { Tr, Td } from "@chakra-ui/react";
 
 type LeaderBoardUserProps = {
   user: ScoreBoardUser;
@@ -14,8 +14,8 @@ const LeaderBoardUser: FC<LeaderBoardUserProps> = ({
   return (
     <Tr>
       <Td>{placement}</Td>
-      <Td>{user.Username}</Td>
-      <Td>{user.Points}</Td>
+      <Td>{user.username}</Td>
+      <Td>{user.points}</Td>
     </Tr>
   );
 };

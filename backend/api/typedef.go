@@ -36,6 +36,6 @@ type RefreshToken struct {
 }
 
 type ScoreBoard struct {
-	Username string `json:"Username"`
-	Points   int    `json:"Points"`
+	Username string `json:"username"`
+	Points   int    `json:"points"`
 }
