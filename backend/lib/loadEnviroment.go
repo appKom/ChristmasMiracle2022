@@ -17,7 +17,9 @@ type Enviroment struct {
 	JWT_SECRET string
 }
 
-func LoadSystemEnv() *Enviroment {
+var LoadedEnv *Enviroment
+
+func LoadSystemEnv() {
 
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -32,7 +34,8 @@ func LoadSystemEnv() *Enviroment {
 	dialect := os.Getenv("DB_DIALECT")
 	port := os.Getenv("DB_PORT")
 	jwtSecret := os.Getenv("JWT_SECRET")
-	return &Enviroment{
+
+	LoadedEnv = &Enviroment{
 		DIALECT:    dialect,
 		USER:       user,
 		PASSWORD:   password,

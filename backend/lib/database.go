@@ -7,7 +7,9 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func ConnectToDataBase(loadedEnv *Enviroment) *gorm.DB {
+var DB *gorm.DB
+
+func ConnectToDataBase(loadedEnv *Enviroment) {
 	dbURI := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", loadedEnv.HOST, loadedEnv.PORT, loadedEnv.USER, loadedEnv.DBNAME, loadedEnv.PASSWORD)
 	db, err := gorm.Open(loadedEnv.DIALECT, dbURI)
 
@@ -16,5 +18,5 @@ func ConnectToDataBase(loadedEnv *Enviroment) *gorm.DB {
 	} else {
 		fmt.Println("Successfully connected to database")
 	}
-	return db
+	DB = db
 }
