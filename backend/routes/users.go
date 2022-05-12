@@ -8,6 +8,7 @@ import (
 	"github.com/appKom/ChristmasMiracle2022/lib"
 )
 
+// Gets all users
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []api.User
 
@@ -16,22 +17,22 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
+// Gets user by ID - Used as profile
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	id := r.Header.Get("sub")
 	var user api.User
 	var solvedTasks []api.Task
 
 	lib.DB.First(&user, id)
-
 	lib.DB.Model(&user).Related(&solvedTasks, "SolvedTasks")
 
-	var userResponse api.CreatedUser
-
-	userResponse.ID = user.ID
-	userResponse.Username = user.Username
-	userResponse.Email = user.Email
-	userResponse.Points = user.Points
-	userResponse.Admin = user.Admin
+	userResponse := api.CreatedUser{
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Points:   user.Points,
+		Admin:    user.Admin,
+	}
 
 	for _, task := range solvedTasks {
 		userResponse.SolvedTasks = append(userResponse.SolvedTasks, task.ID)
@@ -41,13 +42,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(userResponse)
 }
 
+// Gets scoreboard
 func GetScoreBoard(w http.ResponseWriter, r *http.Request) {
-	type ScoreBoard struct {
-		Username string `json:"Username"`
-		Points   int    `json:"Points"`
-	}
-
-	var users []ScoreBoard
+	var users []api.ScoreBoard
 	lib.DB.Raw("SELECT username, points FROM users ORDER BY points desc").Scan(&users)
 
 	SetHeaders(w, http.StatusOK)

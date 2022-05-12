@@ -46,18 +46,18 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.Admin = false
 
 	created := lib.DB.Create(&user)
-	err := created.Error
-	if err != nil {
+	if created.Error != nil {
 		SetHeaders(w, http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+		json.NewEncoder(w).Encode("An error occured, while creating user")
 	}
 
-	var createdUser api.CreatedUser
-	createdUser.ID = user.ID
-	createdUser.Username = user.Username
-	createdUser.Email = user.Email
-	createdUser.Points = user.Points
-	createdUser.Admin = user.Admin
+	createdUser := api.CreatedUser{
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Points:   user.Points,
+		Admin:    user.Admin,
+	}
 
 	SetHeaders(w, http.StatusOK)
 	json.NewEncoder(w).Encode(createdUser)

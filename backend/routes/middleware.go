@@ -64,10 +64,3 @@ func CheckAdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 	})
 }
-
-// function that sets headers
-func SetHeaders(w http.ResponseWriter, status int) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	w.WriteHeader(status)
-}

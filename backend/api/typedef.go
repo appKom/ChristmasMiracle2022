@@ -34,3 +34,8 @@ type TokenResponse struct {
 type RefreshToken struct {
 	Refresh string `json:"refresh_token"`
 }
+
+type ScoreBoard struct {
+	Username string `json:"Username"`
+	Points   int    `json:"Points"`
+}
