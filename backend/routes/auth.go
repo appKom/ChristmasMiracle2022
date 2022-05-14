@@ -40,6 +40,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var userExists api.User
+	lib.DB.Where(&api.User{Email: user.Email}).First(&userExists)
+
+	if userExists.ID != 0 {
+		SetHeaders(w, http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Denne email er allerede i bruk")
+		return
+	}
+
 	hashedPassword, _ := auth.HashPassword(user.Password)
 	user.Password = hashedPassword
 	user.Points = 0
