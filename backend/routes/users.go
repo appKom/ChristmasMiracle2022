@@ -17,9 +17,16 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-// Gets user by ID - Used as profile
-func GetUser(w http.ResponseWriter, r *http.Request) {
+// Gets user by ID
+func GetProfile(w http.ResponseWriter, r *http.Request) {
 	id := r.Header.Get("sub")
+
+	if id == "" {
+		SetHeaders(w, http.StatusBadRequest)
+		json.NewEncoder(w).Encode("No user ID provided")
+		return
+	}
+
 	var user api.User
 	var solvedTasks []api.Task
 

@@ -30,7 +30,7 @@ func handleRequests() {
 	subRouter.HandleFunc("/submit/{id}", routes.CheckAuthMiddleware(routes.SubmitFlag)).Methods("POST", "OPTIONS")
 
 	subRouter.HandleFunc("/scoreboard", routes.CheckAuthMiddleware(routes.GetScoreBoard)).Methods("GET", "OPTIONS")
-	subRouter.HandleFunc("/profile", routes.CheckAuthMiddleware(routes.GetUser)).Methods("GET", "OPTIONS")
+	subRouter.HandleFunc("/profile", routes.CheckAuthMiddleware(routes.GetProfile)).Methods("GET", "OPTIONS")
 
 	// For authentication
 	authRouter.HandleFunc("/login", routes.LoginUser).Methods("POST", "OPTIONS")

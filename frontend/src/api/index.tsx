@@ -122,3 +122,26 @@ export const fetchScoreBoard = async (
   }
   return [];
 };
+
+export const submitFlag = async (
+  token: TokenStateType | null,
+  taskId: number,
+  flag: string
+): Promise<string> => {
+  if (!token) {
+    return "Du er ikke logget inn";
+  }
+
+  const response = await authorizedPost({
+    url: `${API_URL}/submit/${taskId}`,
+    body: {
+      key: flag,
+    },
+    token: token.access,
+  });
+
+  if (response.status === 200) {
+    return "Gratulerer, du fant flagget!";
+  }
+  return "Feil flagg, eller så har du allerede fått poeng for denne oppgaven";
+};
